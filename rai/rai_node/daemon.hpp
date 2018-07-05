@@ -1,3 +1,5 @@
+#pragma once
+
 #include <rai/node/node.hpp>
 #include <rai/node/rpc.hpp>
 

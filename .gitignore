@@ -27,11 +27,12 @@
 *.app
 *.dmg
 *.DS_Store
-#core_test
-#qt_test
-#rai_node
-#rai_wallet
-#slow_test
+/core_test
+/qt_test
+/rai_node
+/rai_wallet
+/slow_test
+miniupnp/miniupnpc/testminixml
 
 # IDEs
 .idea

@@ -1,0 +1,30 @@
+#pragma once
+
+#include "rai/node/node.hpp"
+#include "rai/node/rpc.hpp"
+#include "rai/rai_node/daemon.hpp"
+#include "boost/filesystem.hpp"
+
+
+class AppWrapper
+{
+public:
+  AppWrapper(boost::filesystem::path const & data_path);
+  ~AppWrapper();
+
+  bool send_rpc(boost::property_tree::ptree const & request, boost::property_tree::ptree& response);
+
+private:
+  void _stop();
+  void _poll();
+
+private:
+  std::shared_ptr<rai::node> mNode;
+  std::unique_ptr<rai::rpc> mRpc;
+  std::unique_ptr<rai::thread_runner> mRunner;
+
+	boost::asio::io_service mService;
+	rai::alarm mAlarm;
+	rai::node_init mInit;
+	rai_daemon::daemon_config mConfig;
+};

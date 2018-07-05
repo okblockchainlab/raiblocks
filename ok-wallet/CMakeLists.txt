@@ -10,10 +10,12 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 if (NOT ACTIVE_NETWORK)
-	set(ACTIVE_NETWORK rai_test_network)
+	set(ACTIVE_NETWORK "rai_test_network")
 endif()
+add_definitions(-DACTIVE_NETWORK=${ACTIVE_NETWORK})
+
 if (NOT BOOST_ROOT)
-	set(BOOST_ROOT /usr/local/boost)
+	set(BOOST_ROOT "/usr/local/boost")
 endif()
 
 set(CMAKE_C_FLAGS_DEBUG "$ENV{CFLAGS} -O0 -Wall -g -ggdb")
