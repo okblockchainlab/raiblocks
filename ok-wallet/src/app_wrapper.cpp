@@ -54,6 +54,11 @@ AppWrapper::~AppWrapper()
   _stop();
 }
 
+std::shared_ptr<rai::node> AppWrapper::node()
+{
+  return mNode;
+}
+
 void AppWrapper::_stop()
 {
   if (mRpc) {

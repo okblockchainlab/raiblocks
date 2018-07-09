@@ -6,61 +6,70 @@
 #include <boost/property_tree/ptree.hpp>
 
 
-  /*
+bool _get_previous_block_hash(AppWrapper& aw, const std::string& account, std::string& previous)
 {
-  Request:
-
-  {
-    "action": "account_history",
-    "account": "xrb_1ipx847tk8o46pwxt5qjdbncjqcbwcc1rrmqnkztrfjy5k7z4imsrata9est",
-    "count": "1"
-  }
-  Response:
-
-  {
-      "account": "xrb_1ipx847tk8o46pwxt5qjdbncjqcbwcc1rrmqnkztrfjy5k7z4imsrata9est",
-      "history": [
-          {
-              "type": "send",
-              "account": "xrb_38ztgpejb7yrm7rr586nenkn597s3a1sqiy3m3uyqjicht7kzuhnihdk6zpz",
-              "amount": "80000000000000000000000000000000000",
-              "hash": "80392607E85E73CC3E94B4126F24488EBDFEB174944B890C97E8F36D89591DC5"
-          }
-      ],
-      "previous": "8D3AB98B301224253750D448B4BD997132400CEDD0A8432F775724F2D9821C72"
-  }
-  如果一个block也没有，则没有previous字段
-}
-  */
-std::string _get_previous_block_hash(AppWrapper& aw, const std::string& account)
-{
-	boost::property_tree::ptree request;
-	request.put("action", "account_history");
+  boost::property_tree::ptree request;
+  request.put("action", "account_history");
   request.put("account", account);
   request.put("count", "1");
 
   boost::property_tree::ptree response;
   if (true != aw.send_rpc(request, response)) {
-    return "";
+    return false;
   }
 
-  return response.get("previous", "0"); //or "0000000000000000000000000000000000000000000000000000000000000000" ?
+  previous = response.get("previous", "0"); //or "0000000000000000000000000000000000000000000000000000000000000000" ?
+  return true;
 }
 
-std::string _get_balance(AppWrapper& aw, const std::string& account)
+bool _get_balance(AppWrapper& aw, const std::string& account, rai::uint128_union& balance)
 {
-	boost::property_tree::ptree request;
-	request.put("action", "account_balance");
+  boost::property_tree::ptree request;
+  request.put("action", "account_balance");
   request.put("account", account);
 
   boost::property_tree::ptree response;
   if (true != aw.send_rpc(request, response)) {
-    return "";
+    return false;
   }
 
-  return response.get<std::string>("balance");
+  auto error_balance (balance.decode_dec(response.get<std::string>("balance")));
+  if (error_balance) {
+    return false;
+  }
+  return true;
 }
 
+bool _get_wallet_by_account(AppWrapper& aw, const std::string account, std::string& walletid)
+{
+  for (auto& wallet : aw.node()->wallets.items) {
+    rai::transaction transaction(aw.node()->store.environment, nullptr, false);
+
+    for (auto i(wallet.second->store.begin (transaction)), j(wallet.second->store.end ()); i != j; ++i) {
+      if (account == rai::uint256_union (i->first.uint256 ()).to_account()) {
+        walletid = wallet.first.to_string();
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool _get_representative(AppWrapper& aw, const std::string& account, std::string& representative)
+{
+  boost::property_tree::ptree request;
+  request.put("action", "account_representative");
+  request.put("account", account);
+
+  boost::property_tree::ptree response;
+  if (true != aw.send_rpc(request, response)) {
+    return false;
+  }
+
+  representative = response.get<std::string>("representative");
+  return true;
+}
 
 bool GetAddressFromPrivateKey(const std::string& prv, std::string& address)
 {
@@ -69,38 +78,44 @@ bool GetAddressFromPrivateKey(const std::string& prv, std::string& address)
   return true;
 }
 
-bool produceUnsignedTx(const std::string& from, const std::string& to, const std::string& amount, const std::string& net_type, const char* data_dir, std::string& utx)
+bool produceUnsignedTx(const std::string& from, const std::string& to, const std::string& amount_s, const std::string& net_type, const char* data_dir, std::string& utx)
 {
   AppWrapper aw(data_dir);
 
-  const auto balance = _get_balance(aw, from);
-  if (balance.empty()) {
+  rai::uint128_union amount (0);
+  rai::uint128_union balance (0);
+  if (true != _get_balance(aw, from, balance)) {
+    return false;
+  }
+  if (amount.decode_dec(amount_s)) {
+    return false;
+  }
+  if (balance.number() < amount.number()) {
     return false;
   }
 
-  const auto balance_amount = stoull(balance);
-  const auto send_amount = stoull(amount);
-  if (balance_amount < send_amount) {
+  std::string walletid;
+  if (true != _get_wallet_by_account(aw, from, walletid)) {
     return false;
   }
 
-  const auto& previous = _get_previous_block_hash(aw, from);
-  if (previous.empty()) {
+  std::string previous;
+  if (true != _get_previous_block_hash(aw, from, previous)) {
     return false;
   }
 
-	boost::property_tree::ptree request;
-	request.put ("action", "block_create");
-	request.put ("type", "state");
-	//request.put ("wallet", system.nodes[0]->wallets.items.begin ()->first.to_string ());
-	request.put ("account", from);
-	request.put ("previous", previous);
-	//request.put ("representative", rai::test_genesis_key.pub.to_account ());
-	request.put ("balance", std::to_string(balance_amount - send_amount));
-	request.put ("link", to);
+  boost::property_tree::ptree request;
+  request.put ("action", "block_create");
+  request.put ("type", "state");
+  request.put ("wallet", walletid);
+  request.put ("account", from);
+  request.put ("previous", previous);
+  request.put ("representative", previous);
+  request.put ("balance", balance.number() - amount.number());
+  request.put ("link", to);
 
-	std::stringstream ostream;
-	boost::property_tree::write_json (ostream, request);
+  std::stringstream ostream;
+  boost::property_tree::write_json (ostream, request);
   utx = ostream.str();
   return true;
 }

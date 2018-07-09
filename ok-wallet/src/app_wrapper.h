@@ -12,6 +12,8 @@ public:
   AppWrapper(boost::filesystem::path const & data_path);
   ~AppWrapper();
 
+  std::shared_ptr<rai::node> node();
+
   bool send_rpc(boost::property_tree::ptree const & request, boost::property_tree::ptree& response);
 
 private:
