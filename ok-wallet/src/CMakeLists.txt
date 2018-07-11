@@ -76,6 +76,7 @@ set(WALLET_LIB_SOURCE
   wallet.cpp
 	app_wrapper.cpp
 	test_helper.cpp
+	com_okcoin_vault_jni_raiblocks_Raiblocksj.cpp
 )
 
 

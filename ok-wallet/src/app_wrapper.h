@@ -25,8 +25,10 @@ private:
   std::unique_ptr<rai::rpc> mRpc;
   std::unique_ptr<rai::thread_runner> mRunner;
 
-	boost::asio::io_service mService;
-	rai::alarm mAlarm;
-	rai::node_init mInit;
-	rai_daemon::daemon_config mConfig;
+  boost::asio::io_service mService;
+  rai::alarm mAlarm;
+  rai::node_init mInit;
+  rai_daemon::daemon_config mConfig;
+  std::unique_ptr<rai::opencl_work> mOpencl;
+  std::unique_ptr<rai::work_pool> mOpenclWork;
 };

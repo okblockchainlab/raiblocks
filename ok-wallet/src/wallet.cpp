@@ -18,7 +18,7 @@ bool _get_previous_block_hash(AppWrapper& aw, const std::string& account, std::s
     return false;
   }
 
-  previous = response.get("previous", "0"); //or "0000000000000000000000000000000000000000000000000000000000000000" ?
+  previous = response.get("previous", "0");
   return true;
 }
 
@@ -104,13 +104,16 @@ bool produceUnsignedTx(const std::string& from, const std::string& to, const std
     return false;
   }
 
+  std::string representative;
+  if (true != _get_representative(aw, from, representative)) {
+    return false;
+  }
+
   boost::property_tree::ptree request;
   request.put ("action", "block_create");
   request.put ("type", "state");
-  request.put ("wallet", walletid);
-  request.put ("account", from);
   request.put ("previous", previous);
-  request.put ("representative", previous);
+  request.put ("representative", representative);
   request.put ("balance", balance.number() - amount.number());
   request.put ("link", to);
 
@@ -118,4 +121,26 @@ bool produceUnsignedTx(const std::string& from, const std::string& to, const std
   boost::property_tree::write_json (ostream, request);
   utx = ostream.str();
   return true;
+}
+
+bool signTransaction(const std::string& utx, const std::string& prv, const std::string& net_type, const char* data_dir, std::string& stx)
+{
+  AppWrapper aw(data_dir);
+
+  boost::property_tree::ptree request;
+  std::stringstream istream (utx);
+  boost::property_tree::read_json (istream, request);
+  request.put ("key", prv);
+
+  boost::property_tree::ptree response;
+  if (true != aw.send_rpc(request, response)) {
+    return false;
+  }
+
+  stx = response.get<std::string>("block", "");
+  if (stx.empty()) {
+    return false;
+  } else {
+    return true;
+  }
 }

@@ -7,3 +7,6 @@ xxx
 
 how to create a testnet?  
 https://github.com/nanocurrency/raiblocks/issues/443
+
+
+热钱包中，使用"wallet_add_watch"添加账号，这样在热钱包中只有账号地址，没有私钥。

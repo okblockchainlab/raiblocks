@@ -9,8 +9,10 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+SET (ACTIVE_NETWORK rai_live_network CACHE STRING "Selects which network parameters are used")
+set_property (CACHE ACTIVE_NETWORK PROPERTY STRINGS rai_test_network rai_beta_network rai_live_network)
 if (NOT ACTIVE_NETWORK)
-	set(ACTIVE_NETWORK "rai_test_network")
+	set(ACTIVE_NETWORK "rai_live_network")
 endif()
 add_definitions(-DACTIVE_NETWORK=${ACTIVE_NETWORK})
 

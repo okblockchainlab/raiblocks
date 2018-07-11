@@ -10,7 +10,7 @@ bool GetAddressFromPrivateKey(const std::string& prv, std::string& address);
 extern "C"
 __attribute__ ((visibility("default")))
 bool
-signTransaction(const std::vector<uint8_t>& utx, const std::string& prv, const std::string& net_type, const char* data_dir, std::vector<uint8_t>& stx);
+signTransaction(const std::string& utx, const std::string& prv, const std::string& net_type, const char* data_dir, std::string& stx);
 
 //hot
 //amount: Decimal String in Raw, not Nano.
