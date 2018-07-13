@@ -16,6 +16,8 @@ public:
 
   bool send_rpc(boost::property_tree::ptree const & request, boost::property_tree::ptree& response);
 
+  bool waitfor_catchup_ledger();
+
 private:
   void _stop();
   void _poll();
@@ -31,4 +33,6 @@ private:
   rai_daemon::daemon_config mConfig;
   std::unique_ptr<rai::opencl_work> mOpencl;
   std::unique_ptr<rai::work_pool> mOpenclWork;
+
+  bool pull_completed = false;
 };

@@ -82,6 +82,10 @@ bool produceUnsignedTx(const std::string& from, const std::string& to, const std
 {
   AppWrapper aw(data_dir);
 
+  if ("main" == net_type && true != aw.waitfor_catchup_ledger()) {
+    return false;
+  }
+
   rai::uint128_union amount (0);
   rai::uint128_union balance (0);
   if (true != _get_balance(aw, from, balance)) {

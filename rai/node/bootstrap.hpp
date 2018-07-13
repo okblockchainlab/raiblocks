@@ -58,6 +58,21 @@ public:
 	rai::block_hash end;
 	unsigned attempts;
 };
+
+class ScopeGuard
+{
+public:
+	ScopeGuard(std::function<void()>&& f): _f(std::move(f)) {}
+	~ScopeGuard() {
+		_f();
+	}
+
+	ScopeGuard(const std::function<void()>&) = delete;
+	ScopeGuard& operator=(const ScopeGuard&) = delete;
+
+	std::function<void()> _f;
+};
+
 class frontier_req_client;
 class bulk_push_client;
 class bootstrap_attempt : public std::enable_shared_from_this<bootstrap_attempt>
@@ -65,7 +80,8 @@ class bootstrap_attempt : public std::enable_shared_from_this<bootstrap_attempt>
 public:
 	bootstrap_attempt (std::shared_ptr<rai::node> node_a);
 	~bootstrap_attempt ();
-	void run ();
+	bool run (); /*return true for pulls completed*/
+	bool waiting();
 	std::shared_ptr<rai::bootstrap_client> connection (std::unique_lock<std::mutex> &);
 	bool consume_future (std::future<bool> &);
 	void populate_connections ();
@@ -97,6 +113,7 @@ public:
 	bool stopped;
 	std::mutex mutex;
 	std::condition_variable condition;
+	bool waiting_pulls = false;
 };
 class frontier_req_client : public std::enable_shared_from_this<rai::frontier_req_client>
 {
@@ -178,6 +195,7 @@ public:
 	void run_bootstrap ();
 	void notify_listeners (bool);
 	void add_observer (std::function<void(bool)> const &);
+	void add_result_observer(std::function<void(bool)>const &);
 	bool in_progress ();
 	std::shared_ptr<rai::bootstrap_attempt> current_attempt ();
 	void stop ();
@@ -189,6 +207,7 @@ private:
 	std::mutex mutex;
 	std::condition_variable condition;
 	std::vector<std::function<void(bool)>> observers;
+	std::vector<std::function<void(bool)>> result_observers;
 	std::thread thread;
 };
 class bootstrap_server;

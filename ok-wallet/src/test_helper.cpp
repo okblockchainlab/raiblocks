@@ -7,22 +7,21 @@
 
 bool _init_config(const std::string& data_dir)
 {
-  if (boost::filesystem::exists(data_dir)) {
-    throw std::runtime_error(std::string("data path '") + data_dir + "' had exist.");
+  if (!boost::filesystem::exists(data_dir)) {
+    boost::filesystem::create_directories (data_dir);
   }
 
-	boost::filesystem::create_directories (data_dir);
-	rai_daemon::daemon_config config (data_dir);
+  rai_daemon::daemon_config config (data_dir);
   config.rpc_enable = true;
   config.rpc.enable_control = true;
 
-	std::fstream config_file;
-	boost::filesystem::path config_path(data_dir + "/config.json");
-	if (false != rai::fetch_object (config, config_path, config_file)) {
+  std::fstream config_file;
+  boost::filesystem::path config_path(data_dir + "/config.json");
+  if (false != rai::fetch_object (config, config_path, config_file)) {
     return false;
   }
-	config.node.logging.init (data_dir);
-	config_file.close ();
+  config.node.logging.init (data_dir);
+  config_file.close ();
 
   return true;
 }

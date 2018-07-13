@@ -815,13 +815,16 @@ bool rai::bootstrap_attempt::still_pulling ()
 	return running && (more_pulls || still_pulling);
 }
 
-void rai::bootstrap_attempt::run ()
+bool rai::bootstrap_attempt::run ()
 {
+	bool pull_completed = false;
 	populate_connections ();
 	std::unique_lock<std::mutex> lock (mutex);
 	auto frontier_failure (true);
 	while (!stopped && frontier_failure)
 	{
+		waiting_pulls = true;
+		ScopeGuard sg([this](){waiting_pulls = false;});
 		frontier_failure = request_frontier (lock);
 	}
 	// Shuffle pulls.
@@ -847,6 +850,8 @@ void rai::bootstrap_attempt::run ()
 			}
 			else
 			{
+				waiting_pulls = true;
+				ScopeGuard sg([this](){waiting_pulls = false;});
 				condition.wait (lock);
 			}
 		}
@@ -860,11 +865,19 @@ void rai::bootstrap_attempt::run ()
 	if (!stopped)
 	{
 		BOOST_LOG (node->log) << "Completed pulls";
+		pull_completed = true;
 	}
 	request_push (lock);
 	stopped = true;
 	condition.notify_all ();
 	idle.clear ();
+
+	return pull_completed;
+}
+
+bool rai::bootstrap_attempt::waiting()
+{
+	return waiting_pulls;
 }
 
 std::shared_ptr<rai::bootstrap_client> rai::bootstrap_attempt::connection (std::unique_lock<std::mutex> & lock_a)
@@ -1167,8 +1180,11 @@ void rai::bootstrap_initiator::run_bootstrap ()
 		if (attempt != nullptr)
 		{
 			lock.unlock ();
-			attempt->run ();
+			const auto pull_completed = attempt->run ();
 			lock.lock ();
+			for (const auto& o : result_observers) {
+				o(pull_completed);
+			}
 			attempt = nullptr;
 			condition.notify_all ();
 		}
@@ -1183,6 +1199,12 @@ void rai::bootstrap_initiator::add_observer (std::function<void(bool)> const & o
 {
 	std::lock_guard<std::mutex> lock (mutex);
 	observers.push_back (observer_a);
+}
+
+void rai::bootstrap_initiator::add_result_observer(std::function<void(bool)>const & observer_a)
+{
+	std::lock_guard<std::mutex> lock (mutex);
+	result_observers.push_back(observer_a);
 }
 
 bool rai::bootstrap_initiator::in_progress ()

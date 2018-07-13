@@ -32,6 +32,9 @@ AppWrapper::AppWrapper(boost::filesystem::path const & data_path) :
       return;
     }
 
+    node->bootstrap_initiator.add_result_observer([this](bool completed){
+      pull_completed = completed;
+    });
     node->start ();
     std::unique_ptr<rai::rpc> rpc = get_rpc (mService, *node, mConfig.rpc);
     if (rpc && mConfig.rpc_enable) {
@@ -88,6 +91,41 @@ bool AppWrapper::send_rpc(boost::property_tree::ptree const & request, boost::pr
 
   response = rr.json;
   return true;
+}
+
+bool AppWrapper::waitfor_catchup_ledger()
+{
+  int try_cnt = 0;
+  int waiting_cnt = 0;
+
+  while(try_cnt < 4) {
+    waiting_cnt = 0;
+
+    while(node()->bootstrap_initiator.in_progress()) {
+      auto attempt = node()->bootstrap_initiator.current_attempt();
+      assert(nullptr != attempt);
+      if (attempt->waiting()) {
+        waiting_cnt++;
+      } else {
+        waiting_cnt = 0;
+      }
+
+      //break when wait for pull more then 10 times continuously
+      if (waiting_cnt > 10) {
+        break;
+      }
+
+      sleep(1);
+    }
+    
+    if (true != pull_completed) {
+      sleep(5);//rai::node::ongoing_bootstrap will sleep 5s for the first 3 times.
+      try_cnt++;
+      continue;
+    }
+  }
+
+  return pull_completed;
 }
 
 /* system::poll */
