@@ -105,6 +105,10 @@ bool _set_representative(AppWrapper& aw, const std::string& walletid, const std:
 
 bool testInit(const std::string& test_prv1, const std::string& test_account2, const std::string& data_dir)
 {
+  if (rai::rai_network != rai::rai_networks::rai_test_network) {
+    std::cerr << "You can not call 'testInit' when this module is not compiled with test network." << std::endl;
+    abort();
+  }
   if (true != _init_config(data_dir)) {
     return false;
   }
