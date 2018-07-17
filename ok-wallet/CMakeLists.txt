@@ -33,6 +33,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 enable_testing()
 
+link_libraries(pthread)
 link_libraries(dl)
 
 include(ExternalProject)

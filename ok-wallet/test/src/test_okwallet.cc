@@ -20,7 +20,13 @@ public:
 
     data_dir = cwd + "/raiblock_testdata";
 
-    wlt_mod = dlopen((cwd + "/libraiblocks.dylib").c_str(), RTLD_LAZY);
+#ifdef __APPLE__
+    const auto& mod_path = cwd + "/libraiblocks.dylib";
+#elif __linux__
+    const auto& mod_path = cwd + "/libraiblocks.so";
+#endif
+
+    wlt_mod = dlopen(mod_path.c_str(), RTLD_LAZY);
     getAddress = (get_address_t)dlsym(wlt_mod, "GetAddressFromPrivateKey");
     produceUnsignedTx = (produce_unsigned_tx_t)dlsym(wlt_mod, "produceUnsignedTx");
     signTransaction = (sign_transaction_t)dlsym(wlt_mod, "signTransaction");

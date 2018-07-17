@@ -6,10 +6,14 @@ option(RAIBLOCKS_ASAN "Enable ASan+UBSan" OFF)
 option(RAIBLOCKS_ASAN_INT "Enable ASan+UBSan+Integer overflow" OFF)
 option(RAIBLOCKS_SIMD_OPTIMIZATIONS "Enable CPU-specific SIMD optimizations (SSE/AVX or NEON, e.g.)" OFF)
 
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_STATIC_RUNTIME ON)
+
 find_package (Boost 1.66.0 REQUIRED COMPONENTS date_time filesystem system log log_setup thread program_options regex chrono atomic)
 include_directories (${Boost_INCLUDE_DIR})
 
 if (RAIBLOCKS_SECURE_RPC)
+	set (OPENSSL_USE_STATIC_LIBS TRUE)
 	find_package (OpenSSL 1.0 EXACT REQUIRED)
 	include_directories(${OPENSSL_INCLUDE_DIR})
 	add_definitions (-DRAIBLOCKS_SECURE_RPC)
@@ -68,7 +72,7 @@ add_dependencies(raiblocks-dep proj_raiblocks)
 
 ################################################################################
 
-set(STELLAR_CORE_SOURCE
+set(RAIBLOCKS_SOURCE
 	${PROJECT_SOURCE_DIR}/../rai/rai_node/daemon.cpp
 )
 
@@ -83,12 +87,16 @@ set(WALLET_LIB_SOURCE
 include_directories(${PROJECT_SOURCE_DIR}/..)
 include_directories(${PROJECT_SOURCE_DIR}/../miniupnp/miniupnpc)
 include_directories($ENV{JAVA_HOME}/include)
-include_directories($ENV{JAVA_HOME}/include/darwin)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  include_directories($ENV{JAVA_HOME}/include/darwin)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  include_directories($ENV{JAVA_HOME}/include/linux)
+endif()
 
 link_directories(${PROJECT_SOURCE_DIR}/..)
 link_directories(${PROJECT_SOURCE_DIR}/../miniupnp/miniupnpc)
 
-add_library(raiblocks SHARED ${STELLAR_CORE_SOURCE} ${WALLET_LIB_SOURCE})
+add_library(raiblocks SHARED ${RAIBLOCKS_SOURCE} ${WALLET_LIB_SOURCE})
 add_dependencies(raiblocks raiblocks-dep)
 target_link_libraries(raiblocks node secure lmdb ed25519 rai_lib_static argon2 blake2 xxhash ${OPENSSL_LIBRARIES} ${CRYPTOPP_LIBRARY} miniupnpc ${Boost_ATOMIC_LIBRARY} ${Boost_CHRONO_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_LOG_SETUP_LIBRARY} ${Boost_THREAD_LIBRARY} ${PLATFORM_LIBS})
 set_target_properties (raiblocks PROPERTIES LINK_FLAGS "${PLATFORM_LINK_FLAGS}")

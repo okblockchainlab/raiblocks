@@ -2,6 +2,7 @@
 #include "wallet.h"
 #include "test_helper.h"
 #include <regex>
+#include <assert.h>
 
 static jstring char2jstring(JNIEnv* env, const char* pat)
 {
