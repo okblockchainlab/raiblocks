@@ -3,7 +3,7 @@
 1. cd raiblocks/ok-wallet
 - mkdir build
 - cd build
-- cmake -DACTIVE_NETWORK=rai_live_network ..   ## for testnet, run cmake -DACTIVE_NETWORK=rai_test_network ..
+- cmake -DACTIVE_NETWORK=rai_live_network -DCMAKE_BUILD_TYPE=Debug -DBOOST_ROOT=[boost_root] ..   ## for testnet, set ACTIVE_NETWORK=rai_test_network; for release version, set CMAKE_BUILD_TYPE=Release; the default BOOST_ROOT is /usr/local/boost if you don't set BOOST_ROOT variable.
 - make
 - ls *.so
 - ls *.dylib
@@ -16,3 +16,5 @@
 - 使用正式网时（编译时ACTIVE_NETWORK为rai_live_network），调用produceUnsignedTx(或Java_com_okcoin_vault_jni_raiblocks_Raiblocksj_execute中的"createrawtransaction命令")时，都会先去更新本地的账本数据库。如果本地库比较旧，会比较耗时。
 
 - 在raiblocks的代码中，并没有一个节点可以确切的知道“到此为止 我的账本数据更新完了”。相反，当没有数据更新时系统会一直等待（参见bootstrap_attempt::run）。我的做法是连续等待10秒以上，我就认为更新结束了（参见AppWrapper::waitfor_catchup_ledger）。
+
+- boost库的默认路径为/usr/local/boost，你可以在调用cmake时通过设置BOOST_ROOT来改变它. boost的安装可以参考[官方的安装提示](https://github.com/nanocurrency/raiblocks/wiki/Build-Instructions) 。
