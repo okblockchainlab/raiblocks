@@ -1,13 +1,16 @@
 ### 编译
 
-1. git clone --recursive https://github.com/okblockchainlab/raiblocks.git
-- cd raiblocks/ok-wallet
-- mkdir build
-- cd build
-- cmake -DACTIVE_NETWORK=rai_live_network -DCMAKE_BUILD_TYPE=Debug -DBOOST_ROOT=[boost_root] ..   ## for testnet, set ACTIVE_NETWORK=rai_test_network; for release version, set CMAKE_BUILD_TYPE=Release; the default BOOST_ROOT is /usr/local/boost if you don't set BOOST_ROOT variable.
-- make
-- ls *.so
-- ls *.dylib
+```shell
+git clone --recursive https://github.com/okblockchainlab/raiblocks.git
+cd raiblocks/ok-wallet
+mkdir build
+cd build
+# for testnet, set ACTIVE_NETWORK=rai_test_network; for release version, set CMAKE_BUILD_TYPE=Release; the default BOOST_ROOT is /usr/local/boost if you don't set BOOST_ROOT variable.
+cmake -DACTIVE_NETWORK=rai_live_network -DCMAKE_BUILD_TYPE=Debug -DBOOST_ROOT=[boost_root] ..
+make
+ls *.so
+ls *.dylib
+```
 
 ### 注意项
 - raiblocks的测试网是一个单点网络，具体创建方法参见[raiblocks issues443](https://github.com/nanocurrency/raiblocks/issues/443)。简单来说，你需要使用 ACTIVE_NETWORK=rai_test_network 作为参数编译项目。在项目中已经提供了一个 test_genesis_key 作为测试账号使用，此账号提供了无数的币值用来测试（具体可参见rai/common.cpp）。
