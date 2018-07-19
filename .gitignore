@@ -72,3 +72,6 @@ Makefile
 Testing
 
 ok-wallet/build/*
+libdownload/*
+depslib/*
+ok-build/*

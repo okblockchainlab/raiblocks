@@ -96,10 +96,10 @@ endif()
 link_directories(${PROJECT_SOURCE_DIR}/..)
 link_directories(${PROJECT_SOURCE_DIR}/../miniupnp/miniupnpc)
 
-add_library(raiblocks SHARED ${RAIBLOCKS_SOURCE} ${WALLET_LIB_SOURCE})
-add_dependencies(raiblocks raiblocks-dep)
-target_link_libraries(raiblocks node secure lmdb ed25519 rai_lib_static argon2 blake2 xxhash ${OPENSSL_LIBRARIES} ${CRYPTOPP_LIBRARY} miniupnpc ${Boost_ATOMIC_LIBRARY} ${Boost_CHRONO_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_LOG_SETUP_LIBRARY} ${Boost_THREAD_LIBRARY} ${PLATFORM_LIBS})
-set_target_properties (raiblocks PROPERTIES LINK_FLAGS "${PLATFORM_LINK_FLAGS}")
+add_library(${OKLIBRARY_NAME} SHARED ${RAIBLOCKS_SOURCE} ${WALLET_LIB_SOURCE})
+add_dependencies(${OKLIBRARY_NAME} raiblocks-dep)
+target_link_libraries(${OKLIBRARY_NAME} node secure lmdb ed25519 rai_lib_static argon2 blake2 xxhash ${OPENSSL_LIBRARIES} ${CRYPTOPP_LIBRARY} miniupnpc ${Boost_ATOMIC_LIBRARY} ${Boost_CHRONO_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_LOG_SETUP_LIBRARY} ${Boost_THREAD_LIBRARY} ${PLATFORM_LIBS})
+set_target_properties (${OKLIBRARY_NAME} PROPERTIES LINK_FLAGS "${PLATFORM_LINK_FLAGS}")
 
 ################################################################################
 ExternalProject_Add (proj_gtest

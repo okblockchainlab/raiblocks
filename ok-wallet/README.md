@@ -1,18 +1,20 @@
 ### 编译
 
+##### centos7的编译依赖项
 ```shell
-git clone --recursive https://github.com/okblockchainlab/raiblocks.git
-cd raiblocks/ok-wallet
-mkdir build
-cd build
-# for testnet, set ACTIVE_NETWORK=rai_test_network; for release version, set CMAKE_BUILD_TYPE=Release; the default BOOST_ROOT is /usr/local/boost if you don't set BOOST_ROOT variable.
-cmake -DACTIVE_NETWORK=rai_live_network -DCMAKE_BUILD_TYPE=Debug -DBOOST_ROOT=[boost_root] ..
-make
-ls *.so
-ls *.dylib
+sudo yum install cmake gcc
 ```
+项目中用到了c++14标准，但centos的源上的gcc一般版本都比较低不支持c++14，所以有可能需要下载gcc源码手工编译安装。
+
+##### 编译步骤
+- git clone https://github.com/okblockchainlab/raiblocks.git
+- cd raiblocks
+- export COIN_DEPS=`pwd`/depslib
+- ./build.sh (only run this script if you first time build the project)
+- ./runbuild.sh
 
 ### 注意项
+- **如果要编译测试网络的版本**，将runbuild.sh中的-DACTIVE_NETWORK参数修改为rai_test_network。
 - raiblocks的测试网是一个单点网络，具体创建方法参见[raiblocks issues443](https://github.com/nanocurrency/raiblocks/issues/443)。简单来说，你需要使用 ACTIVE_NETWORK=rai_test_network 作为参数编译项目。在项目中已经提供了一个 test_genesis_key 作为测试账号使用，此账号提供了无数的币值用来测试（具体可参见rai/common.cpp）。
 
 - 热钱包中，使用rpc协议中的"wallet_add_watch"添加账号，这样在热钱包中只有账号地址，没有私钥。但在测试代码中，为了方便我直接在钱包中添加了一个私钥。
