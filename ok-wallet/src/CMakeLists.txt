@@ -47,8 +47,10 @@ else ()
 endif (APPLE)
 
 if (CRYPTOPP_CUSTOM OR NOT RAIBLOCKS_SIMD_OPTIMIZATIONS)
+	set (CRYPTOPP_LIBPATH ${PROJECT_SOURCE_DIR}/..)
 	set (CRYPTOPP_LIBRARY cryptopp)
 else ()
+	set (CRYPTOPP_LIBPATH ${PROJECT_SOURCE_DIR}/../cryptopp)
 	set (CRYPTOPP_LIBRARY cryptopp-static)
 endif ()
 
@@ -93,12 +95,9 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   include_directories($ENV{JAVA_HOME}/include/linux)
 endif()
 
-link_directories(${PROJECT_SOURCE_DIR}/..)
-link_directories(${PROJECT_SOURCE_DIR}/../miniupnp/miniupnpc)
-
 add_library(${OKLIBRARY_NAME} SHARED ${RAIBLOCKS_SOURCE} ${WALLET_LIB_SOURCE})
 add_dependencies(${OKLIBRARY_NAME} raiblocks-dep)
-target_link_libraries(${OKLIBRARY_NAME} node secure lmdb ed25519 rai_lib_static argon2 blake2 xxhash ${OPENSSL_LIBRARIES} ${CRYPTOPP_LIBRARY} miniupnpc ${Boost_ATOMIC_LIBRARY} ${Boost_CHRONO_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_LOG_SETUP_LIBRARY} ${Boost_THREAD_LIBRARY} ${PLATFORM_LIBS})
+target_link_libraries(${OKLIBRARY_NAME} ${PROJECT_SOURCE_DIR}/../libnode.a ${PROJECT_SOURCE_DIR}/../libsecure.a ${PROJECT_SOURCE_DIR}/../liblmdb.a ${PROJECT_SOURCE_DIR}/../libed25519.a ${PROJECT_SOURCE_DIR}/../librai_lib_static.a ${PROJECT_SOURCE_DIR}/../libargon2.a ${PROJECT_SOURCE_DIR}/../libblake2.a ${PROJECT_SOURCE_DIR}/../libxxhash.a ${OPENSSL_LIBRARIES} ${CRYPTOPP_LIBPATH}/lib${CRYPTOPP_LIBRARY}.a ${PROJECT_SOURCE_DIR}/../miniupnp/miniupnpc/libminiupnpc.a ${Boost_ATOMIC_LIBRARY} ${Boost_CHRONO_LIBRARY} ${Boost_REGEX_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${Boost_LOG_LIBRARY} ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_LOG_SETUP_LIBRARY} ${Boost_THREAD_LIBRARY} ${PLATFORM_LIBS})
 set_target_properties (${OKLIBRARY_NAME} PROPERTIES LINK_FLAGS "${PLATFORM_LINK_FLAGS}")
 
 ################################################################################
