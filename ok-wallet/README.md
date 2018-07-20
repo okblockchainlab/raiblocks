@@ -9,7 +9,7 @@ sudo yum install cmake gcc
 ##### 编译步骤
 - git clone https://github.com/okblockchainlab/raiblocks.git
 - cd raiblocks
-- export COIN_DEPS=`pwd`/depslib
+- export COIN_DEPS=\`pwd\`/depslib
 - ./build.sh (only run this script if you first time build the project)
 - ./runbuild.sh
 
