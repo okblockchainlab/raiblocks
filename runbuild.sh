@@ -46,4 +46,4 @@ make -j 2
 [ $? -ne 0 ] && exit 1
 
 cp ./lib${PROJECT_NAME}.${EXT} ../
-nm lib${PROJECT_NAME}.${EXT} |grep _Java_com_okcoin
+nm lib${PROJECT_NAME}.${EXT} |grep "[ _]Java_com_okcoin"
