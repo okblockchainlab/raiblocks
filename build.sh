@@ -3,8 +3,9 @@ PWD=`pwd`
 LIBDOWNLOAD=$PWD/libdownload
 
 if [ -z "$COIN_DEPS" ]; then
-	printf "No COIN_DEPS detected! "
+	printf "No COIN_DEPS detected!\\n"
 	printf "Setup COIN_DEPS before build: export COIN_DEPS=`pwd`/depslib \\n"
+	exit 1
 fi
 
 if [ ! -d "$LIBDOWNLOAD" ];then
