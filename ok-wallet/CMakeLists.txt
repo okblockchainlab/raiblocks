@@ -17,6 +17,10 @@ if (NOT BOOST_ROOT)
 	message(FATAL_ERROR "undefined BOOST_ROOT")
 endif()
 
+if (NOT DEFINED ENV{COIN_DEPS})
+  message(FATAL_ERROR "undefined COIN_DEPS environment variable")
+endif()
+
 SET (ACTIVE_NETWORK rai_live_network CACHE STRING "Selects which network parameters are used")
 set_property (CACHE ACTIVE_NETWORK PROPERTY STRINGS rai_test_network rai_beta_network rai_live_network)
 if (NOT ACTIVE_NETWORK)
