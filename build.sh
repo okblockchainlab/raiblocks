@@ -72,5 +72,11 @@ if [ ! -d ./openssl-1.0.2k ];then
 fi
 
 cd openssl-1.0.2k
-./config --prefix=$COIN_DEPS/openssl no-shared enable-ec enable-ecdh enable-ecdsa -fPIC
+TARGET_OS=`uname -s`
+MHD_NAME=`uname -m`
+if [ "$TARGET_OS" == "Darwin" ] && [ "$MHD_NAME" == "x86_64" ]; then
+        ./Configure  no-shared enable-ec enable-ecdh enable-ecdsa -fPIC --prefix=$COIN_DEPS/openssl darwin64-x86_64-cc
+else
+        ./config --prefix=$COIN_DEPS/openssl no-shared enable-ec enable-ecdh enable-ecdsa -fPIC
+fi
 make && make install
