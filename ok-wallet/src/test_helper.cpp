@@ -5,27 +5,6 @@
 #include <boost/property_tree/ptree.hpp>
 
 
-bool _init_config(const std::string& data_dir)
-{
-  if (!boost::filesystem::exists(data_dir)) {
-    boost::filesystem::create_directories (data_dir);
-  }
-
-  rai_daemon::daemon_config config (data_dir);
-  config.rpc_enable = true;
-  config.rpc.enable_control = true;
-
-  std::fstream config_file;
-  boost::filesystem::path config_path(data_dir + "/config.json");
-  if (false != rai::fetch_object (config, config_path, config_file)) {
-    return false;
-  }
-  config.node.logging.init (data_dir);
-  config_file.close ();
-
-  return true;
-}
-
 bool _wallet_create(AppWrapper& aw, std::string& walletid)
 {
 	boost::property_tree::ptree request;
@@ -103,17 +82,14 @@ bool _set_representative(AppWrapper& aw, const std::string& walletid, const std:
   }
 }
 
-bool testInit(const std::string& test_prv1, const std::string& test_account2, const std::string& data_dir)
+bool testInit(const std::string& test_prv1, const std::string& test_account2)
 {
   if (rai::rai_network != rai::rai_networks::rai_test_network) {
     std::cerr << "You can not call 'testInit' when this module is not compiled with test network." << std::endl;
     abort();
   }
-  if (true != _init_config(data_dir)) {
-    return false;
-  }
 
-  AppWrapper aw(data_dir);
+  AppWrapper aw;
 
   std::string walletid;
   if (true != _wallet_create(aw, walletid)) {
@@ -144,9 +120,9 @@ bool testInit(const std::string& test_prv1, const std::string& test_account2, co
   return true;
 }
 
-bool commitTransaction(const std::string& stx, const std::string& net_type, const char* data_dir, std::string& result_str)
+bool commitTransaction(const std::string& stx, const std::string& net_type, std::string& result_str)
 {
-  AppWrapper aw(data_dir);
+  AppWrapper aw;
 
   boost::property_tree::ptree request;
   request.put("action", "process");

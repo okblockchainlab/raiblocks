@@ -46,4 +46,5 @@ make -j 2
 [ $? -ne 0 ] && exit 1
 
 cp ./lib${PROJECT_NAME}.${EXT} ../
+cp ./test_okwallet ../
 nm lib${PROJECT_NAME}.${EXT} |grep "[ _]Java_com_okcoin"

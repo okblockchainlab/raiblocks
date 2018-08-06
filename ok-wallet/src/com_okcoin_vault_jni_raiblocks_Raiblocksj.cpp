@@ -63,18 +63,6 @@ Java_com_okcoin_vault_jni_raiblocks_Raiblocksj_execute(JNIEnv *env, jclass, jstr
     std::function<jobjectArray(const std::vector<std::string>& args)> handler;
   } command_handlers[] = {
     {
-      "testinit", [env](const std::vector<std::string>& args)->jobjectArray{
-        assert(3 == args.size());
-
-        std::string result("success");
-        if (true != testInit(args[0], args[1], args[2])) {
-          result = "failed";
-        }
-
-        return string2jobjectArray(env, result);
-      }
-    },
-    {
       "getaddressbyprivatekey", [env](const std::vector<std::string>& args)->jobjectArray{
         assert(1 == args.size());
         std::string address;
@@ -91,7 +79,7 @@ Java_com_okcoin_vault_jni_raiblocks_Raiblocksj_execute(JNIEnv *env, jclass, jstr
 
         std::string utx;
         const std::string& net_type = jstring2stdstring(env, networkType);
-        if (true != produceUnsignedTx(args[0], args[1], args[2], net_type, args[3].c_str(), utx)) {
+        if (true != produceUnsignedTx(args[0], args[1], args[2], args[3], utx)) {
           utx.clear();
         }
 
@@ -100,11 +88,11 @@ Java_com_okcoin_vault_jni_raiblocks_Raiblocksj_execute(JNIEnv *env, jclass, jstr
     },
     {
       "signrawtransaction", [env, &networkType](const std::vector<std::string>& args)->jobjectArray {
-        assert(3 == args.size());
+        assert(2 == args.size());
 
         std::string stx;
         const std::string& net_type = jstring2stdstring(env, networkType);
-        if (true != signTransaction(args[0], args[1], net_type, args[2].c_str(), stx)) {
+        if (true != signTransaction(args[0], args[1], net_type, stx)) {
           stx.clear();
         }
 

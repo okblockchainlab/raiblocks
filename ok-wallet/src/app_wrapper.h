@@ -9,7 +9,7 @@
 class AppWrapper
 {
 public:
-  AppWrapper(boost::filesystem::path const & data_path);
+  AppWrapper();
   ~AppWrapper();
 
   std::shared_ptr<rai::node> node();
@@ -21,6 +21,7 @@ public:
 private:
   void _stop();
   void _poll();
+bool _init_config(const boost::filesystem::path& cfg_dir);
 
 private:
   std::shared_ptr<rai::node> mNode;
@@ -35,4 +36,6 @@ private:
   std::unique_ptr<rai::work_pool> mOpenclWork;
 
   bool pull_completed = false;
+
+  boost::filesystem::path mCfgDir;
 };

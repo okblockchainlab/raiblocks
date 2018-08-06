@@ -1,32 +1,40 @@
 #include "app_wrapper.h"
 #include "rpc_response.h"
 
-AppWrapper::AppWrapper(boost::filesystem::path const & data_path) :
-  mAlarm(mService), mConfig(data_path)
+AppWrapper::AppWrapper() :
+  mAlarm(mService), mConfig("")
 {
   /*the code blow adjust from rai_daemon::daemon::run*/
 
-  auto config_path ((data_path / "config.json"));
+  mCfgDir = rai::unique_path();
+  if (true != _init_config(mCfgDir)) {
+    std::cerr << "init config failed in path: " << mCfgDir << std::endl;
+    return;
+  }
+
+  rai_daemon::daemon_config config(mCfgDir);
+
+  auto config_path ((mCfgDir / "config.json"));
   std::fstream config_file;
-  auto error (rai::fetch_object (mConfig, config_path, config_file));
+  auto error (rai::fetch_object (config, config_path, config_file));
   if (error) {
     std::cerr << "Error deserializing config\n";
     return;
   }
 
-  mConfig.node.logging.init (data_path);
+  config.node.logging.init (mCfgDir);
   config_file.close ();
-  mOpencl = rai::opencl_work::create (mConfig.opencl_enable, mConfig.opencl, mConfig.node.logging);
+  mOpencl = rai::opencl_work::create (config.opencl_enable, config.opencl, config.node.logging);
   auto opencl = mOpencl.get();
   mOpenclWork = std::make_unique<rai::work_pool> (
-    mConfig.node.work_threads,
+    config.node.work_threads,
     mOpencl ? [opencl](rai::uint256_union const & root_a) { return opencl->generate_work (root_a); }
       : std::function<boost::optional<uint64_t> (rai::uint256_union const &)> (nullptr)
   );
 
   try
   {
-    auto node (std::make_shared<rai::node> (mInit, mService, data_path, mAlarm, mConfig.node, *(mOpenclWork.get())));
+    auto node (std::make_shared<rai::node> (mInit, mService, mCfgDir, mAlarm, config.node, *(mOpenclWork.get())));
     if (mInit.error ()) {
       std::cerr << "Error initializing node\n";
       return;
@@ -36,11 +44,12 @@ AppWrapper::AppWrapper(boost::filesystem::path const & data_path) :
       pull_completed = completed;
     });
     node->start ();
-    std::unique_ptr<rai::rpc> rpc = get_rpc (mService, *node, mConfig.rpc);
-    if (rpc && mConfig.rpc_enable) {
+    std::unique_ptr<rai::rpc> rpc = get_rpc (mService, *node, config.rpc);
+    if (rpc && config.rpc_enable) {
       rpc->start ();
     }
 
+    mConfig = std::move(config);
     mRunner = std::make_unique<rai::thread_runner> (mService, node->config.io_threads);
     mRpc = std::move(rpc);
     mNode = std::move(node);
@@ -54,6 +63,7 @@ AppWrapper::AppWrapper(boost::filesystem::path const & data_path) :
 AppWrapper::~AppWrapper()
 {
   _stop();
+  boost::filesystem::remove_all(mCfgDir);
 }
 
 std::shared_ptr<rai::node> AppWrapper::node()
@@ -117,7 +127,7 @@ bool AppWrapper::waitfor_catchup_ledger()
 
       sleep(1);
     }
-    
+
     if (true != pull_completed) {
       sleep(5);//rai::node::ongoing_bootstrap will sleep 5s for the first 3 times.
       try_cnt++;
@@ -136,4 +146,25 @@ void AppWrapper::_poll()
   {
     std::this_thread::sleep_for (std::chrono::milliseconds (50));
   }
+}
+
+bool AppWrapper::_init_config(const boost::filesystem::path& data_dir)
+{
+  if (!boost::filesystem::exists(data_dir)) {
+    boost::filesystem::create_directories (data_dir);
+  }
+
+  rai_daemon::daemon_config config (data_dir);
+  config.rpc_enable = true;
+  config.rpc.enable_control = true;
+
+  std::fstream config_file;
+  boost::filesystem::path config_path((data_dir / "config.json"));
+  if (false != rai::fetch_object (config, config_path, config_file)) {
+    return false;
+  }
+  config.node.logging.init (data_dir);
+  config_file.close ();
+
+  return true;
 }
