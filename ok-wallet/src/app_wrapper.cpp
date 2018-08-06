@@ -1,12 +1,13 @@
 #include "app_wrapper.h"
 #include "rpc_response.h"
 
+
 AppWrapper::AppWrapper() :
   mAlarm(mService), mConfig("")
 {
   /*the code blow adjust from rai_daemon::daemon::run*/
 
-  mCfgDir = rai::unique_path();
+  mCfgDir = boost::filesystem::temp_directory_path() / boost::filesystem::unique_path();
   if (true != _init_config(mCfgDir)) {
     std::cerr << "init config failed in path: " << mCfgDir << std::endl;
     return;
