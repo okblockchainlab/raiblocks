@@ -1,4 +1,4 @@
-#include "com_okcoin_vault_jni_raiblocks_Raiblocksj.h"
+#include "com_okcoin_vault_jni_raiblocks_XrbJ.h"
 #include "wallet.h"
 #include "test_helper.h"
 #include <regex>
@@ -56,7 +56,7 @@ std::vector<std::string> split_by_regex(const std::string& s, const char* patter
 }
 
 JNIEXPORT jobjectArray JNICALL
-Java_com_okcoin_vault_jni_raiblocks_Raiblocksj_execute(JNIEnv *env, jclass, jstring networkType, jstring _command)
+Java_com_okcoin_vault_jni_raiblocks_XrbJ_execute(JNIEnv *env, jclass, jstring networkType, jstring _command)
 {
   static struct {
     const char* cmd_name;
