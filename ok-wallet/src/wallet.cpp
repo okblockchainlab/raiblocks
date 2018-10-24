@@ -53,7 +53,7 @@ bool signTransaction(
       return false;
   }
 
-  AppWrapper aw;
+  //AppWrapper aw;
 
   boost::property_tree::ptree request;
   std::stringstream istream (utx);
