@@ -1,4 +1,4 @@
-#include "com_okcoin_vault_jni_raiblocks_XrbJ.h"
+#include "com_okcoin_vault_jni_xrb_Xrbj.h"
 #include "wallet.h"
 #include "test_helper.h"
 #include <regex>
@@ -72,7 +72,7 @@ std::vector<std::string> split_by_regex(const std::string& s, const char* patter
 }
 
 JNIEXPORT jobjectArray JNICALL
-Java_com_okcoin_vault_jni_raiblocks_XrbJ_execute(JNIEnv *env, jclass, jstring networkType, jstring _command)
+Java_com_okcoin_vault_jni_xrb_Xrbj_execute(JNIEnv *env, jclass, jstring networkType, jstring _command)
 {
   if (mutex.try_lock() == false) {
     return strings2jobjectArray(env, {"Error", "JNI_LOCKED"});
