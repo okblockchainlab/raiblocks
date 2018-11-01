@@ -1993,6 +1993,8 @@ bool rai::parse_tcp_endpoint (std::string const & string, rai::tcp_endpoint & en
 	return result;
 }
 
+bool enable_port_mapping = true;
+
 void rai::node::start ()
 {
 	network.receive ();
@@ -2004,7 +2006,10 @@ void rai::node::start ()
 	backup_wallet ();
 	active.announce_votes ();
 	online_reps.recalculate_stake ();
-	port_mapping.start ();
+	if (enable_port_mapping)
+    {
+        port_mapping.start ();
+    }
 	add_initial_peers ();
 	observers.started ();
 }
@@ -2021,7 +2026,10 @@ void rai::node::stop ()
 	network.stop ();
 	bootstrap_initiator.stop ();
 	bootstrap.stop ();
-	port_mapping.stop ();
+    if (enable_port_mapping)
+    {
+        port_mapping.stop();
+    }
 	wallets.stop ();
 }
 

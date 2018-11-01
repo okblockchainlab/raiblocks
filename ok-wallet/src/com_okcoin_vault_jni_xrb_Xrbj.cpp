@@ -80,6 +80,8 @@ std::vector<std::string> split_by_regex(const std::string& s, const char* patter
   return result;
 }
 
+extern bool enable_port_mapping;
+
 JNIEXPORT jobjectArray JNICALL
 Java_com_okcoin_vault_jni_xrb_Xrbj_execute(JNIEnv *env, jclass, jstring networkType, jstring _command)
 {
@@ -90,7 +92,6 @@ Java_com_okcoin_vault_jni_xrb_Xrbj_execute(JNIEnv *env, jclass, jstring networkT
 
     const auto& command = jstring2stdstring(env, _command);
     const auto& cmd_vec = split_by_regex(command, "(\\S+)");
-
 
     std::string result("Error");
     std::string context("Unknown command");
@@ -114,7 +115,6 @@ Java_com_okcoin_vault_jni_xrb_Xrbj_execute(JNIEnv *env, jclass, jstring networkT
             context = "Invalid command";
         } else {
 
-            const std::string &net_type = jstring2stdstring(env, networkType);
             if (produceUnsignedTx(cmd_vec[1], cmd_vec[2], cmd_vec[3], cmd_vec[4], context)) {
                 result = "SUCCESS";
             }
@@ -125,6 +125,7 @@ Java_com_okcoin_vault_jni_xrb_Xrbj_execute(JNIEnv *env, jclass, jstring networkT
             context = "Invalid command";
         } else {
             const std::string& net_type = jstring2stdstring(env, networkType);
+            enable_port_mapping = false;
             if (signTransaction(cmd_vec[1], cmd_vec[2], net_type, context)) {
                 result = "SUCCESS";
             }
