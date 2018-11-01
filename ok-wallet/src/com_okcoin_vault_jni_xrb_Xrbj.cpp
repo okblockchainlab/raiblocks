@@ -94,12 +94,13 @@ Java_com_okcoin_vault_jni_xrb_Xrbj_execute(JNIEnv *env, jclass, jstring networkT
         return strings2jobjectArray(env, {"Error", "Invalid command"});
     }
 
+    std::string result("SUCCESS");
+
     if (cmd_vec[0] == "getaddressbyprivatekey") {
         if (2 != cmd_vec.size()) {
             return strings2jobjectArray(env, {"Error", "Invalid command"});
         }
 
-        std::string result("SUCCESS");
         std::string address;
         if (!GetAddressFromPrivateKey(cmd_vec[1], address)) {
             address.clear();
@@ -112,7 +113,6 @@ Java_com_okcoin_vault_jni_xrb_Xrbj_execute(JNIEnv *env, jclass, jstring networkT
             return strings2jobjectArray(env, {"Error", "Invalid command"});
         }
 
-        std::string result("SUCCESS");
         std::string utx="xxx";
         const std::string& net_type = jstring2stdstring(env, networkType);
         if (!produceUnsignedTx(cmd_vec[1], cmd_vec[2], cmd_vec[3], cmd_vec[4], utx)) {
@@ -127,7 +127,6 @@ Java_com_okcoin_vault_jni_xrb_Xrbj_execute(JNIEnv *env, jclass, jstring networkT
             return strings2jobjectArray(env, {"Error", "Invalid command"});
         }
 
-        std::string result("SUCCESS");
         std::string stx;
         const std::string& net_type = jstring2stdstring(env, networkType);
         if (!signTransaction(cmd_vec[1], cmd_vec[2], net_type, stx)) {
@@ -139,7 +138,6 @@ Java_com_okcoin_vault_jni_xrb_Xrbj_execute(JNIEnv *env, jclass, jstring networkT
     }
 
     return strings2jobjectArray(env, {"Error", "Unknown command"});
-
 }
 
 JNIEXPORT jobjectArray JNICALL
