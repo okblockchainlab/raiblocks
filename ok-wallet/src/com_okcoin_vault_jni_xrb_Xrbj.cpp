@@ -90,54 +90,48 @@ Java_com_okcoin_vault_jni_xrb_Xrbj_execute(JNIEnv *env, jclass, jstring networkT
 
     const auto& command = jstring2stdstring(env, _command);
     const auto& cmd_vec = split_by_regex(command, "(\\S+)");
+
+
+    std::string result("Error");
+    std::string context("Unknown command");
+
     if (cmd_vec.empty()) {
-        return strings2jobjectArray(env, {"Error", "Invalid command"});
-    }
 
-    std::string result("SUCCESS");
+        context = "Invalid command";
 
-    if (cmd_vec[0] == "getaddressbyprivatekey") {
+    } else if (cmd_vec[0] == "getaddressbyprivatekey") {
+
         if (2 != cmd_vec.size()) {
-            return strings2jobjectArray(env, {"Error", "Invalid command"});
+            context = "Invalid command";
+        } else {
+            if (GetAddressFromPrivateKey(cmd_vec[1], context)) {
+                result = "SUCCESS";
+            }
         }
-
-        std::string address;
-        if (!GetAddressFromPrivateKey(cmd_vec[1], address)) {
-            address.clear();
-            result = "Error";
-        }
-        return strings2jobjectArray(env, {result, address});
-
     } else if (cmd_vec[0] == "createrawtransaction") {
+
         if(5 != cmd_vec.size()) {
-            return strings2jobjectArray(env, {"Error", "Invalid command"});
-        }
+            context = "Invalid command";
+        } else {
 
-        std::string utx="xxx";
-        const std::string& net_type = jstring2stdstring(env, networkType);
-        if (!produceUnsignedTx(cmd_vec[1], cmd_vec[2], cmd_vec[3], cmd_vec[4], utx)) {
-            utx.clear();
-            result = "Error";
+            const std::string &net_type = jstring2stdstring(env, networkType);
+            if (produceUnsignedTx(cmd_vec[1], cmd_vec[2], cmd_vec[3], cmd_vec[4], context)) {
+                result = "SUCCESS";
+            }
         }
-
-        return strings2jobjectArray(env, {result, utx});
     } else if (cmd_vec[0] == "signrawtransaction") {
 
         if (3 != cmd_vec.size()) {
-            return strings2jobjectArray(env, {"Error", "Invalid command"});
+            context = "Invalid command";
+        } else {
+            const std::string& net_type = jstring2stdstring(env, networkType);
+            if (signTransaction(cmd_vec[1], cmd_vec[2], net_type, context)) {
+                result = "SUCCESS";
+            }
         }
-
-        std::string stx;
-        const std::string& net_type = jstring2stdstring(env, networkType);
-        if (!signTransaction(cmd_vec[1], cmd_vec[2], net_type, stx)) {
-            stx.clear();
-            result = "Error";
-        }
-
-        return strings2jobjectArray(env, {result, stx});
     }
 
-    return strings2jobjectArray(env, {"Error", "Unknown command"});
+    return strings2jobjectArray(env, {result, context});
 }
 
 JNIEXPORT jobjectArray JNICALL
