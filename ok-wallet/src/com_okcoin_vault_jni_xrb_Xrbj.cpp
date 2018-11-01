@@ -83,6 +83,68 @@ std::vector<std::string> split_by_regex(const std::string& s, const char* patter
 JNIEXPORT jobjectArray JNICALL
 Java_com_okcoin_vault_jni_xrb_Xrbj_execute(JNIEnv *env, jclass, jstring networkType, jstring _command)
 {
+    if (mutex.try_lock() == false) {
+        return strings2jobjectArray(env, {"Error", "JNI_LOCKED"});
+    }
+    AutoUnlock au;
+
+    const auto& command = jstring2stdstring(env, _command);
+    const auto& cmd_vec = split_by_regex(command, "(\\S+)");
+    if (cmd_vec.empty()) {
+        return strings2jobjectArray(env, {"Error", "Invalid command"});
+    }
+
+    if (cmd_vec[0] == "getaddressbyprivatekey") {
+        if (2 != cmd_vec.size()) {
+            return strings2jobjectArray(env, {"Error", "Invalid command"});
+        }
+
+        std::string result("SUCCESS");
+        std::string address;
+        if (!GetAddressFromPrivateKey(cmd_vec[1], address)) {
+            address.clear();
+            result = "Error";
+        }
+        return strings2jobjectArray(env, {result, address});
+
+    } else if (cmd_vec[0] == "createrawtransaction") {
+        if(5 != cmd_vec.size()) {
+            return strings2jobjectArray(env, {"Error", "Invalid command"});
+        }
+
+        std::string result("SUCCESS");
+        std::string utx="xxx";
+        const std::string& net_type = jstring2stdstring(env, networkType);
+        if (!produceUnsignedTx(cmd_vec[1], cmd_vec[2], cmd_vec[3], cmd_vec[4], utx)) {
+            utx.clear();
+            result = "Error";
+        }
+
+        return strings2jobjectArray(env, {result, utx});
+    } else if (cmd_vec[0] == "signrawtransaction") {
+
+        if (3 != cmd_vec.size()) {
+            return strings2jobjectArray(env, {"Error", "Invalid command"});
+        }
+
+        std::string result("SUCCESS");
+        std::string stx;
+        const std::string& net_type = jstring2stdstring(env, networkType);
+        if (!signTransaction(cmd_vec[1], cmd_vec[2], net_type, stx)) {
+            stx.clear();
+            result = "Error";
+        }
+
+        return strings2jobjectArray(env, {result, stx});
+    }
+
+    return strings2jobjectArray(env, {"Error", "Unknown command"});
+
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_com_okcoin_vault_jni_xrb_Xrbj_execute_bad(JNIEnv *env, jclass, jstring networkType, jstring _command)
+{
   if (mutex.try_lock() == false) {
     return strings2jobjectArray(env, {"Error", "JNI_LOCKED"});
   }
