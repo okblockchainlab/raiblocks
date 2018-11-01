@@ -121,11 +121,17 @@ Java_com_okcoin_vault_jni_xrb_Xrbj_execute(JNIEnv *env, jclass, jstring networkT
         }
     } else if (cmd_vec[0] == "signrawtransaction") {
 
-        if (3 != cmd_vec.size()) {
+        if (3 != cmd_vec.size() && 4 != cmd_vec.size()) {
             context = "Invalid command";
-        } else {
+        }
+        else
+        {
             const std::string& net_type = jstring2stdstring(env, networkType);
+
             enable_port_mapping = false;
+            if (cmd_vec.size() == 4 && cmd_vec[3] == "nospeedup") {
+                enable_port_mapping = true;
+            }
             if (signTransaction(cmd_vec[1], cmd_vec[2], net_type, context)) {
                 result = "SUCCESS";
             }
