@@ -5,7 +5,7 @@
 sudo yum install cmake gcc
 ```
 项目中用到了c++14标准，但centos的源上的gcc一般版本都比较低不支持c++14，所以有可能需要下载gcc源码手工编译安装。
-有时候需要用环境变量指定编译器
+在多编译器环境中，需要用环境变量指定支持c++14的编译器
 ```
 export CC=gcc
 export CXX=g++
