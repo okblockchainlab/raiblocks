@@ -1,6 +1,6 @@
 ### 编译
 
-##### centos7的编译依赖项
+##### centos7编译注意事项
 ```shell
 sudo yum install cmake gcc
 ```
